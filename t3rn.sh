@@ -1,32 +1,32 @@
 #!/bin/bash
 
-# Цвета текста
+# колір тексту
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
-NC='\033[0m' # Нет цвета (сброс цвета)
+NC='\033[0m' # Немає кольору (скидання кольору)
 
-# Проверка наличия curl и установка, если не установлен
+# Перевірка наявності curl та встановлення, якщо не встановлено 
 if ! command -v curl &> /dev/null; then
     sudo apt update
     sudo apt install curl -y
 fi
 sleep 1
 
-# Отображаем логотип
+# Відображаємо логотип
 curl -s https://raw.githubusercontent.com/Crypto-Familly/crypto-familly-logo/refs/heads/main/logo.sh | bash
 
-# Проверка наличия bc и установка, если не установлен
+# Перевірка наявності bc та встановлення, якщо не встановлено
 if ! command -v bc &> /dev/null; then
     sudo apt update
     sudo apt install bc -y
 fi
 sleep 1
 
-# Проверка версии Ubuntu
+# Перевірка версії Ubuntu
 UBUNTU_VERSION=$(lsb_release -rs)
 REQUIRED_VERSION=22.04
 
@@ -36,38 +36,38 @@ if (( $(echo "$UBUNTU_VERSION < $REQUIRED_VERSION" | bc -l) )); then
 fi
 
 # Меню
-echo -e "${YELLOW}Выберите действие:${NC}"
-echo -e "${CYAN}1) Установка ноды${NC}"
-echo -e "${CYAN}2) Обновление ноды${NC}"
-echo -e "${CYAN}3) Проверка логов${NC}"
-echo -e "${CYAN}4) Рестарт ноды${NC}"
-echo -e "${CYAN}5) Удаление ноды${NC}"
+echo -e "${YELLOW}Виберіть дію:${NC}"
+echo -e "${CYAN}1) Встановлення ноди${NC}"
+echo -e "${CYAN}2) Оновлення ноди${NC}"
+echo -e "${CYAN}3) Перевірка логів${NC}"
+echo -e "${CYAN}4) Рестарт ноди${NC}"
+echo -e "${CYAN}5) Видалення ноди${NC}"
 
-echo -e "${YELLOW}Введите номер:${NC} "
+echo -e "${YELLOW}Введіть номер :${NC} "
 read choice
 
 case $choice in
     1)
-        echo -e "${BLUE}Установливаем ноду t3rn...${NC}"
+        echo -e "${BLUE}Встановлюємо ноду t3rn...${NC}"
 
-        # Обновление и установка зависимостей
+        # Оновлення та встановлення залежностей
         sudo apt update
         sudo apt upgrade -y
 
-        # Скачиваем бинарник
+        # Завантажуємо бінарник
         #LATEST_VERSION=$(curl -s https://api.github.com/repos/t3rn/executor-release/releases/latest | grep 'tag_name' | cut -d\" -f4)
         EXECUTOR_URL="https://github.com/t3rn/executor-release/releases/download/v0.69.0/executor-linux-v0.69.0.tar.gz"
         curl -L -o executor-linux-v0.69.0.tar.gz $EXECUTOR_URL
 
-        # Извлекаем
+        # Вилучаємо
         tar -xzvf executor-linux-v0.69.0.tar.gz
         rm -rf executor-linux-v0.69.0.tar.gz
 
-        # Определяем пользователя и домашнюю директорию
+        # Визначаємо користувача та домашню директорію
         USERNAME=$(whoami)
         HOME_DIR=$(eval echo ~$USERNAME)
 
-        # Создаем .t3rn и записываем приватный ключ
+        # Створюємо .t3rn та записуємо приватний ключ
         CONFIG_FILE="$HOME_DIR/executor/executor/bin/.t3rn"
         echo "ENVIRONMENT=testnet" >> $CONFIG_FILE
         echo "EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API=false" > $CONFIG_FILE
@@ -98,11 +98,11 @@ EOF
           echo "ENVIRONMENT=testnet" >> "$HOME/executor/executor/bin/.t3rn"
         fi
 
-        echo -e "${YELLOW}Введите ваш приватный ключ:${NC}"
+        echo -e "${YELLOW}Введіть свій приватний ключ:${NC}"
         read PRIVATE_KEY
         sed -i "s|PRIVATE_KEY_LOCAL=|PRIVATE_KEY_LOCAL=$PRIVATE_KEY|" $CONFIG_FILE
 
-        # Создаем сервисник
+        # Створюємо сервісник
         sudo bash -c "cat <<EOT > /etc/systemd/system/t3rn.service
 [Unit]
 Description=t3rn Service
@@ -127,40 +127,40 @@ EOT"
         sudo systemctl start t3rn
         sleep 2
 
-        # Заключительный вывод
+        # Заключний висновок
         echo -e "${PURPLE}-----------------------------------------------------------------------${NC}"
-        echo -e "${YELLOW}Команда для проверки логов:${NC}"
+        echo -e "${YELLOW}Команда для перевірки логів:${NC}"
         echo "sudo journalctl -u t3rn -f"
         echo -e "${PURPLE}-----------------------------------------------------------------------${NC}"
-        echo -e "${GREEN}Sk1fas Journey — вся крипта в одном месте!${NC}"
-        echo -e "${CYAN}Наш Telegram https://t.me/Sk1fasCryptoJourney${NC}"
+        echo -e "${GREEN}Сrypto Familly${NC}"
+        echo -e "${CYAN}Наш Telegram https://t.me/Crypto_Familly_Activity${NC}"
         sleep 2
 
-        # Проверка логов
+        # Перевірка логів
         sudo journalctl -u t3rn -f
         ;;
     2)
-        echo -e "${BLUE}Обновление ноды t3rn...${NC}"
+        echo -e "${BLUE}Оновлення ноди t3rn...${NC}"
 
-        # Остановка сервиса
+        # Зупинка сервісу
         sudo systemctl stop t3rn
 
-        # Удаляем папку executor
+        # Видаляємо папку executor
         cd
         rm -rf executor/
 
-        # Скачиваем новый бинарник
+        # Завантажуємо новий бінарник
         #LATEST_VERSION=$(curl -s https://api.github.com/repos/t3rn/executor-release/releases/latest | grep 'tag_name' | cut -d\" -f4)
         EXECUTOR_URL="https://github.com/t3rn/executor-release/releases/download/v0.69.0/executor-linux-v0.69.0.tar.gz"
         curl -L -o executor-linux-v0.69.0.tar.gz $EXECUTOR_URL
         tar -xzvf executor-linux-v0.69.0.tar.gz
         rm -rf executor-linux-v0.69.0.tar.gz
 
-        # Определяем пользователя и домашнюю директорию
+        # Визначаємо користувача та домашню директорію
         USERNAME=$(whoami)
         HOME_DIR=$(eval echo ~$USERNAME)
         
-        # Создаем .t3rn и записываем приватный ключ
+        # Створюємо .t3rn та записуємо приватний ключ
         CONFIG_FILE="$HOME_DIR/executor/executor/bin/.t3rn"
         echo "ENVIRONMENT=testnet" >> $CONFIG_FILE
         echo "EXECUTOR_PROCESS_PENDING_ORDERS_FROM_API=false" > $CONFIG_FILE
@@ -192,7 +192,7 @@ EOF
           echo "ENVIRONMENT=testnet" >> "$HOME/executor/executor/bin/.t3rn"
         fi
 
-        echo -e "${YELLOW}Введите ваш приватный ключ:${NC}"
+        echo -e "${YELLOW}Введіть свій приватний ключ:${NC}"
         read PRIVATE_KEY
         sed -i "s|PRIVATE_KEY_LOCAL=|PRIVATE_KEY_LOCAL=$PRIVATE_KEY|" $CONFIG_FILE
 
@@ -204,11 +204,11 @@ EOF
 
         # Заключительный вывод
         echo -e "${PURPLE}-----------------------------------------------------------------------${NC}"
-        echo -e "${YELLOW}Команда для проверки логов:${NC}"
+        echo -e "${YELLOW}Команда для перевірки логів:${NC}"
         echo "sudo journalctl -u t3rn -f"
         echo -e "${PURPLE}-----------------------------------------------------------------------${NC}"
-        echo -e "${GREEN}Sk1fas Journey — вся крипта в одном месте!${NC}"
-        echo -e "${CYAN}Наш Telegram https://t.me/Sk1fasCryptoJourney${NC}"
+        echo -e "${GREEN}Сrypto Familly${NC}"
+        echo -e "${CYAN}Наш Telegram https://t.me/Crypto_Familly_Activity${NC}"
         sleep 2
 
         # Проверка логов
@@ -224,7 +224,7 @@ EOF
         sudo journalctl -u t3rn -f
         ;;
     5)
-        echo -e "${BLUE}Удаление ноды t3rn...${NC}"
+        echo -e "${BLUE}Видалення ноди t3rn...${NC}"
 
         # Остановка и удаление сервиса
         sudo systemctl stop t3rn
@@ -236,15 +236,15 @@ EOF
         # Удаление папки executor
         rm -rf $HOME/executor
 
-        echo -e "${GREEN}Нода t3rn успешно удалена!${NC}"
+        echo -e "${GREEN}Нода t3rn успішно видалено!${NC}"
 
         # Заключительный вывод
         echo -e "${PURPLE}-----------------------------------------------------------------------${NC}"
-        echo -e "${GREEN}Sk1fas Journey — вся крипта в одном месте!${NC}"
-        echo -e "${CYAN}Наш Telegram https://t.me/Sk1fasCryptoJourney${NC}"
+        echo -e "${GREEN}Сrypto Familly${NC}"
+        echo -e "${CYAN}Наш Telegram https://t.me/Crypto_Familly_Activity${NC}"
         sleep 1
         ;;
     *)
-        echo -e "${RED}Неверный выбор. Пожалуйста, введите номер от 1 до 4.${NC}"
+        echo -e "${RED}Неправильний вибір. Будь ласка, введіть номер від 1 до 5.${NC}"
         ;;
 esac
