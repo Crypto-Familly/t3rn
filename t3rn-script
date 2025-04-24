@@ -1,0 +1,112 @@
+#!/bin/bash
+
+# Кольори
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+CYAN='\033[0;36m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+# Перевірка curl
+if ! command -v curl &> /dev/null; then
+    sudo apt update && sudo apt install curl -y
+fi
+
+# Перевірка bc
+if ! command -v bc &> /dev/null; then
+    sudo apt update && sudo apt install bc -y
+fi
+
+# Вивід логотипа
+echo -e '\e[0;32m'
+echo "╭━━━╮╱╱╱╱╱╱╱╱╭╮╱╱╱╱╭━━━╮╱╱╱╱╱╱╭╮╭╮"
+echo "┃╭━╮┃╱╱╱╱╱╱╱╭╯╰╮╱╱╱┃╭━━╯╱╱╱╱╱╱┃┃┃┃"
+echo "┃┃╱╰╋━┳╮╱╭┳━┻╮╭╋━━╮┃╰━━┳━━┳╮╭┳┫┃┃┃╭╮╱╭╮"
+echo "┃┃╱╭┫╭┫┃╱┃┃╭╮┃┃┃╭╮┃┃╭━━┫╭╮┃╰╯┣┫┃┃┃┃┃╱┃┃"
+echo "┃╰━╯┃┃┃╰━╯┃╰╯┃╰┫╰╯┃┃┃╱╱┃╭╮┃┃┃┃┃╰┫╰┫╰━╯┃"
+echo "╰━━━┻╯╰━╮╭┫╭━┻━┻━━╯╰╯╱╱╰╯╰┻┻┻┻┻━┻━┻━╮╭╯"
+echo "╱╱╱╱╱╱╭━╯┃┃┃╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╭━╯┃"
+echo "╱╱╱╱╱╱╰━━╯╰╯╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╰━━╯"
+echo -e "${CYAN}     Powered by Crypto-Family${NC}"
+echo -e "${CYAN}     TG: https://t.me/Crypto_Familly_Activity${NC}"
+echo -e "${CYAN}     GitHub: https://github.com/Crypto-Familly${NC}"
+echo -e '\e[0m'
+
+# Меню
+echo -e "${YELLOW}Оберіть дію:${NC}"
+echo -e "${CYAN}1) Установка MysticChain${NC}"
+echo -e "${CYAN}2) Оновлення ноди${NC}"
+echo -e "${CYAN}3) Перегляд логів${NC}"
+echo -e "${CYAN}4) Рестарт ноди${NC}"
+echo -e "${CYAN}5) Видалити ноду${NC}"
+echo -ne "${YELLOW}Введіть номер: ${NC}"
+read choice
+
+case $choice in
+1)
+    echo -e "${GREEN}Встановлення MysticChain...${NC}"
+    sudo apt update && sudo apt upgrade -y
+
+    # Скачати і розпакувати (приклад)
+    curl -L -o mystic-node.tar.gz https://example.com/mystic-node.tar.gz
+    tar -xzf mystic-node.tar.gz && rm mystic-node.tar.gz
+
+    # Приватний ключ
+    echo -ne "${YELLOW}Введіть приватний ключ: ${NC}"
+    read PRIVATE_KEY
+    echo "PRIVATE_KEY=$PRIVATE_KEY" > ~/mystic-node/.env
+
+    # systemd
+    sudo bash -c "cat <<EOT > /etc/systemd/system/mystic.service
+[Unit]
+Description=MysticChain Node
+After=network.target
+
+[Service]
+EnvironmentFile=/home/$USER/mystic-node/.env
+ExecStart=/home/$USER/mystic-node/mystic
+Restart=always
+User=$USER
+
+[Install]
+WantedBy=multi-user.target
+EOT"
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable mystic
+    sudo systemctl start mystic
+    echo -e "${GREEN}Нода встановлена й запущена.${NC}"
+    ;;
+
+2)
+    echo -e "${GREEN}Оновлення MysticChain...${NC}"
+    sudo systemctl stop mystic
+    rm -rf ~/mystic-node
+    curl -L -o mystic-node.tar.gz https://example.com/mystic-node.tar.gz
+    tar -xzf mystic-node.tar.gz && rm mystic-node.tar.gz
+    sudo systemctl start mystic
+    echo -e "${GREEN}Оновлено!${NC}"
+    ;;
+
+3)
+    sudo journalctl -u mystic -f
+    ;;
+
+4)
+    sudo systemctl restart mystic
+    sudo journalctl -u mystic -f
+    ;;
+
+5)
+    sudo systemctl stop mystic
+    sudo systemctl disable mystic
+    sudo rm /etc/systemd/system/mystic.service
+    sudo systemctl daemon-reload
+    rm -rf ~/mystic-node
+    echo -e "${RED}MysticChain ноду видалено.${NC}"
+    ;;
+
+*)
+    echo -e "${RED}Невірний вибір.${NC}"
+    ;;
+esac
